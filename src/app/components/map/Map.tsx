@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from 're
 import { useState , Dispatch, SetStateAction} from "react"
 import { MapOptions } from '@/app/components/map/MapOptions'
 import L from 'leaflet'
+import { Console } from 'console'
 
 export interface SearchValues {
     specimenName : string 
@@ -135,7 +136,7 @@ export default function Map(props: MapProps) {
             </div>
         }
 
-        <MapContainer className="z-0" center={[40, -95]} zoom={3} style={{ height: "100vh", width: "100%" }} scrollWheelZoom={false}>
+        <MapContainer className="z-0" center={[40, -95]} zoom={3} style={{ height: "100vh", width: "30vw" }} scrollWheelZoom={false}>
             <LocationFinder />
             <TileLayer
                 attribution={attribution}

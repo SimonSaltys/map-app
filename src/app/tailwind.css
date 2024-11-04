@@ -9,6 +9,11 @@
     height: 100% !important;
     width: 100% !important
   }
+
+.image-gallery-thumbnail-image {
+  width: 100px !important;
+  height: 100px !important;
+}  
   
   .image-gallery-content {
     height: 100% !important;
@@ -40,6 +45,6 @@
     max-height: 100% !important;
     max-width: 100% !important;
     object-fit: fill !important;
-    width: 100% !important;
+    width: 500px !important;
     height: 500px !important;
   }

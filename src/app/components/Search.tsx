@@ -3,6 +3,7 @@
 import { FaSearch } from "react-icons/fa"
 import { Dispatch, SetStateAction, useState } from "react"
 import "@/app/tailwind.css";
+import { SearchValues } from "./map/Map";
 
 const URL = "https://api.inaturalist.org/v1/taxa/autocomplete";
 
