@@ -1,13 +1,15 @@
 "use client"
 import "@/app/tailwind.css";
+import { DisplayOptions } from "./Map"
 import { Dispatch, SetStateAction, useState } from "react"
 
-export function MapOptions(props : {setDisplayOptions : Dispatch<SetStateAction<DisplayOptions>> }) {
-    const [radius, setRadius] = useState<number>(7500);
-    const [displayAmount, setDisplayAmount] = useState<number>(20);
-    const [beforeDate, setBeforeDate] = useState<Date | undefined>(undefined);  
-    const [sinceDate, setSinceDate] = useState<Date | undefined>(undefined);
-    const [gradeType, setGradeType] = useState<GradeType>('none');
+export function MapOptions(props : {displayOptions : DisplayOptions, setDisplayOptions : Dispatch<SetStateAction<DisplayOptions>> }) {
+    const displayOptions = props.displayOptions;
+    const [radius, setRadius] = useState<number>(displayOptions.radius);
+    const [displayAmount, setDisplayAmount] = useState<number>(displayOptions.displayAmount);
+    const [beforeDate, setBeforeDate] = useState<Date | undefined>(displayOptions.beforeDate);  
+    const [sinceDate, setSinceDate] = useState<Date | undefined>(displayOptions.sinceDate);
+    const [gradeType, setGradeType] = useState<string>(displayOptions.gradeType);
 
     const handleSubmit = (event : React.FormEvent) => {
         event.preventDefault()
@@ -30,7 +32,7 @@ export function MapOptions(props : {setDisplayOptions : Dispatch<SetStateAction<
                 value={radius}
                 onChange={(e) => setRadius(Number(e.target.value))}
                 min={1}
-                max={7500}
+                max={75}
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
             />
 
@@ -79,12 +81,12 @@ export function MapOptions(props : {setDisplayOptions : Dispatch<SetStateAction<
         <select
             id="grade-type"
             value={gradeType}
-            onChange={(e) => setGradeType(e.target.value as GradeType)}
+            onChange={(e) => setGradeType(e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
             >
-                <option value="none">None</option>
-                <option value="verifiable">Verifiable</option>
-                <option value="researched">Researched</option>
+                <option value="needs_id,research,casual">None</option>
+                <option value="needs_id,research">Verifiable</option>
+                <option value="research">Researched</option>
             </select>
                 
             <label htmlFor="grade-type" className="block text-gray-700 mb-2"> Grade type </label>

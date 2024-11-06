@@ -4,52 +4,54 @@ import "@/app/tailwind.css"
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from 'react-leaflet'
 import { useState , Dispatch, SetStateAction} from "react"
 import { MapOptions } from '@/app/components/map/MapOptions'
-import L from 'leaflet'
+import L, { LatLngLiteral } from 'leaflet'
 import { Console } from 'console'
 
 export interface SearchValues {
-    specimenName : string 
-    taxonId : number
+    specimenName : string | undefined
+    taxonId : number 
 }
-
-type GradeType = 'verified' | 'researched' | 'none';
 
 export interface DisplayOptions {
     radius : number
     displayAmount : number
     beforeDate: Date | undefined; 
     sinceDate: Date | undefined; 
-    gradeType : GradeType
+    gradeType : string
 }
 
-export interface MapProps extends SearchValues {
-    observations: any[]; 
-    setObservations: Dispatch<SetStateAction<any[]>>;
+export interface MapProps {
+    activeSpecies : string | undefined
+    position : LatLngLiteral
+    userCoordinates: LatLngLiteral | undefined 
+    setUserCoordinates: Dispatch<SetStateAction<LatLngLiteral | undefined>> 
+    observations: any[]
+    setDisplayOptions : Dispatch<SetStateAction<DisplayOptions>>
+    displayOptions : DisplayOptions 
 }
 
 export default function Map(props: MapProps) {
 
-    const { specimenName, taxonId } = props
     const [showMapOptions, setShowMapOptions] = useState<boolean>(false)
-    const [clickedLocation, setClickedLocation] = useState<L.LatLngLiteral>()
-    const [displayOptions,setDisplayOptions] = useState<DisplayOptions>({
-        radius : 7500,
-        displayAmount : 50,
-        beforeDate : undefined,
-        sinceDate : undefined,
-        gradeType : "none"})
 
     const lightModeTiles: string = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
     const darkModeTiles: string = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
     const prefersDarkMode: boolean = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
     const openAttribution: string = '&copy; https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
     const esriAttribution: string = "Powered by <a href='https://www.esri.com/en-us/home' rel='noopener noreferrer'>Esri</a>"
-    const iNatTileUrl: string = 'https://api.inaturalist.org/v1/points/{z}/{x}/{y}.png?photos=true&taxon_name=' + props.specimenName
+    const iNatTileUrl: string = 'https://api.inaturalist.org/v1/points/{z}/{x}/{y}.png?photos=true&taxon_name=' + props.activeSpecies
 
     let tiles = !prefersDarkMode ? lightModeTiles : darkModeTiles
     let attribution = !prefersDarkMode ? openAttribution : esriAttribution
     
-    const customIcon = L.icon({
+    const observationIcon = L.icon({
+        iconRetinaUrl: '/img/marker-32.png',
+        iconUrl: '/img/marker-32.png',
+        popupAnchor: [-0, -0],
+        iconSize: [32, 32],
+      });
+
+      const centerIcon = L.icon({
         iconRetinaUrl: '/img/marker-icon-2x.png',
         iconUrl: '/img/marker-icon.png',
         shadowUrl: '/img/marker-shadow.png',
@@ -60,65 +62,23 @@ export default function Map(props: MapProps) {
         shadowSize: [41, 41]
       });
 
+      
+
     const LocationFinder = () => {
         const map = useMapEvents({
             click(e) {
-                setClickedLocation(e.latlng)
-                getObservations(e.latlng, map.getZoom());
+                props.setUserCoordinates({ lat: e.latlng.lat, lng: e.latlng.lng });
             },
         })
-        return null
+
+        return props.position === null ? null : (
+            <Marker position={props.position} icon={centerIcon} />
+        )
     }
 
     const toggleMapOptions = () => {
         setShowMapOptions((prev) => !prev)
     };
-
-    const getObservations = async (latLng: L.LatLngLiteral, zoom : number) => {
-
-        let gradeType = ''
-        switch (displayOptions.gradeType) {
-            case 'researched':
-                gradeType = 'research'
-                break; 
-            case 'verified':
-                gradeType = 'needs_id,research'
-                break; 
-            default:
-                gradeType = 'needs_id,research,casual'
-                break; 
-        }
-
-        try {
-            const params = new URLSearchParams({
-                taxon_name: specimenName,
-                taxon_id: taxonId.toString(),
-                lat: latLng.lat.toString(),
-                lng: latLng.lng.toString(),
-                radius: (displayOptions.radius / 1000).toString(),
-                per_page: displayOptions.displayAmount.toString(),
-                quality_grade: gradeType
-            })
-
-            if (displayOptions.beforeDate) {
-                params.append('d2', displayOptions.beforeDate.toDateString())
-            }
-            if (displayOptions.sinceDate) {
-                params.append('d1', displayOptions.sinceDate.toDateString())
-            }
-
-            const url = `https://api.inaturalist.org/v1/observations?${params.toString()}`
-            const response = await fetch(url)
-                  .then(res => res.json())
-           
-            props.setObservations(response.results || [])
-
-            console.log(props.observations)
-
-        } catch (error) {
-            console.error("Error fetching observations:", error)
-        }
-    }
 
    return (
         <div className="relative">
@@ -132,11 +92,14 @@ export default function Map(props: MapProps) {
 
         {showMapOptions && 
             <div className="absolute top-16 right-4 z-50 bg-white shadow-md p-4 rounded">
-                <MapOptions setDisplayOptions={setDisplayOptions}/>
+                <MapOptions 
+                    setDisplayOptions={props.setDisplayOptions}
+                    displayOptions={props.displayOptions}
+                />
             </div>
         }
 
-        <MapContainer className="z-0" center={[40, -95]} zoom={3} style={{ height: "100vh", width: "30vw" }} scrollWheelZoom={false}>
+        <MapContainer className="z-0 rounded-xl" center={[props.position.lat, props.position.lng]} zoom={3}  style={{ height: "100vh", width: "30vw"}} scrollWheelZoom={false}>
             <LocationFinder />
             <TileLayer
                 attribution={attribution}
@@ -145,10 +108,10 @@ export default function Map(props: MapProps) {
             <TileLayer
                 url={iNatTileUrl}
             />
-            {clickedLocation && (
+            {props.position && (
                 <Circle
-                    center={clickedLocation}
-                    radius={displayOptions.radius}
+                    center={props.position}
+                    radius={props.displayOptions.radius * 1000}
                     pathOptions={{ color: '#004C46', fillColor: '#004C46' }}
                 />
             )}
@@ -156,12 +119,12 @@ export default function Map(props: MapProps) {
             {props.observations.length > 0 && (
                 <>
                     {props.observations.map((observation, index) => {
-                        if (index < displayOptions.displayAmount) {
+                        if (index < props.displayOptions.displayAmount) {
                             return (
                                 <Marker 
                                     key={index} 
                                     position={[observation.geojson.coordinates[1], observation.geojson.coordinates[0]]} 
-                                    icon={customIcon}
+                                    icon={observationIcon}
                                 >
                                     <Popup>
                                         <div className='flex h-[200px] w-[300px] justify-between'>

@@ -2,49 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+header {
+  min-width: 99vw;
+}
+
+body {
+  width: 100%;
+  margin: 0 auto !important;
+  float: none !important;
+}
+
+
+
 /* image gallery CSS */
-
-
 .image-gallery {
     height: 100% !important;
     width: 100% !important
   }
 
-.image-gallery-thumbnail-image {
-  width: 100px !important;
-  height: 100px !important;
-}  
-  
-  .image-gallery-content {
+.image-gallery-content {
     height: 100% !important;
     width: 100% !important
-  }
+}
+
+.image-gallery-slide-wrapper {
+  height: calc(100% - 100px) !important;
+  width: 100% !important
+}
+
+.image-gallery-swipe {
+  height: 100% !important;
+  width: 100% !important
+}
+
   
-  .image-gallery-slide-wrapper {
-    height: calc(100% - 100px) !important;
-    width: 100% !important
-  }
-  
-  .image-gallery-swipe {
-    height: 100% !important;
-    width: 100% !important
-  }
-  
-  .image-gallery-slides {
+.image-gallery-slides {
+  width: 100% !important;
+  height: 100% !important;
+} 
+
+.image-gallery-slide {
     width: 100% !important;
     height: 100% !important;
-  }
+}
   
-  .image-gallery-slide {
-    width: 100% !important;
-    height: 100% !important;
-  }
-  
-  .image-gallery-slide img {
+.image-gallery-slide img {
     display: inline-block;
     max-height: 100% !important;
     max-width: 100% !important;
     object-fit: fill !important;
-    width: 500px !important;
-    height: 500px !important;
-  }
+    width: 100% !important;
+    height: 100% !important;
+}
